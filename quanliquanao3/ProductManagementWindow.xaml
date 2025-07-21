@@ -1,0 +1,58 @@
+﻿<Window x:Class="quanliquanao3.ProductManagementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:quanliquanao3"
+        mc:Ignorable="d"
+        Title="ProductManagementWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="0,10,0,0" TextWrapping="Wrap" Text="Product Management" VerticalAlignment="Top" FontSize="24" FontWeight="Bold"/>
+        <StackPanel Margin="10,72,0,79" Grid.RowSpan="3">
+            <ComboBox x:Name="cbCategory" Width="200" SelectedValuePath="CategoryId" DisplayMemberPath="CategoryName" SelectionChanged="cbCategory_SelectionChanged"/>
+            <ComboBox x:Name="cbSize" Width="200"  SelectionChanged="cbSize_SelectionChanged"/>
+            <DataGrid x:Name="dgProduct" Height="216" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Product ID" Binding="{Binding ProductId}" Width="*"/>
+                    <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" Width="*"/>
+                    <DataGridTextColumn Header="Color" Binding="{Binding Color}" Width="*"/>
+                    <DataGridTextColumn Header="Price" Binding="{Binding Price}" Width="*"/>
+                    <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+        <Button Name="btnAdd" Content="Add" HorizontalAlignment="Left" Margin="10,73,0,0" Grid.Row="2" VerticalAlignment="Top" RenderTransformOrigin="-0.535,0.564" Height="35" Width="60" Click="Button_Add"/>
+        <Button Name="btnEdit" Content="Edit" HorizontalAlignment="Left" Margin="88,73,0,0" Grid.Row="2" VerticalAlignment="Top" RenderTransformOrigin="-0.535,0.564" Height="35" Width="60" Click="Button_Edit"/>
+        <Button Name="btnDelete" Content="Delete" HorizontalAlignment="Center" Margin="0,73,0,0" Grid.Row="2" VerticalAlignment="Top" RenderTransformOrigin="-0.535,0.564" Height="35" Width="60" Click="Button_Delete"/>
+        <Button Name="btnReset" Content="Reset" HorizontalAlignment="Left" Margin="247,73,0,0" Grid.Row="2" VerticalAlignment="Top" RenderTransformOrigin="-0.535,0.564" Height="35" Width="60" Click="Button_Reset"/>
+
+        <StackPanel x:Name="inputPanel" Grid.Row="0" Grid.Column="1" Margin="10,90,10,38" Grid.RowSpan="3">
+            <TextBlock Text="Product ID: " FontSize="13"
+                    VerticalAlignment="Center" Margin="0,0,10,10"
+                       Grid.Row="0" Grid.Column="0"/>
+            <TextBox Name="txtProductId" Width="200" Margin="5,0" Padding="3" IsEnabled="False"/>
+            <TextBlock Text="ProductName: " FontSize="13"  
+VerticalAlignment="Center" Margin="0,0,10,10"
+Grid.Row="0" Grid.Column="0"/>
+            <TextBox Name="txtProductName" Width="200" Margin="5,0" Padding="3" IsEnabled="False"/>
+            <TextBlock Text="Category: " FontSize="13"></TextBlock>
+            <ComboBox Name="cbCategoryInput" Width="200" Margin="5,0" Padding="3" IsEnabled="False" SelectedValuePath="CategoryId" DisplayMemberPath="CategoryName" SelectionChanged="cbCategoryInput_SelectionChanged"/>
+            <TextBlock Text="Color: " FontSize="13"></TextBlock>
+            <TextBox Name="txtColor" Width="200" Margin="5,0" Padding="3" IsEnabled="False"/>
+            <TextBlock Text="Price: " FontSize="13"></TextBlock>
+            <TextBox Name="txtPrice" Width="200" Margin="5,0" Padding="3" IsEnabled="False"/>
+            <TextBlock Text="Quantity: " FontSize="13"></TextBlock>
+            <TextBox Name="txtQuantity" Width="200" Margin="5,0" Padding="3" IsEnabled="False"/>
+            <Button Name="btnSave" Content="Save" Width="80" Margin="5" Click="btnSave_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

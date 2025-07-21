@@ -1,0 +1,57 @@
+﻿<Window x:Class="quanliquanao3.ExportManagementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:quanliquanao3"
+        mc:Ignorable="d"
+        Title="ExportManagementWindow" Height="450" Width="800">
+    <Grid Margin="0,0,0,32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" MinHeight="198.04" />
+        </Grid.RowDefinitions>
+
+        <!-- Thông tin phiếu nhập -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Height="24" Width="737">
+            <TextBlock Text="Ngày Xuất:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <DatePicker x:Name="dpImportDate" Width="150" SelectedDate="{x:Static sys:DateTime.Now}" Margin="0,0,10,0"/>
+
+            <TextBlock Text="Người mua:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox x:Name="cbCustomers" Width="200" DisplayMemberPath="CustomerName" SelectedValuePath="CustomerId" Margin="0,0,10,0" SelectionChanged="cbCustomers_SelectionChanged" />
+
+        </StackPanel>
+
+        <DataGrid x:Name="dgExportDetails" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="True" Margin="0,0,265,10">
+            <DataGrid.Columns>
+                <DataGridComboBoxColumn Header="Sản phẩm" Width="200"
+                                SelectedValueBinding="{Binding ProductId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                SelectedValuePath="ProductId"
+                                DisplayMemberPath="ProductName"
+                                ItemsSource="{Binding ProductsList, RelativeSource={RelativeSource AncestorType=Window}}" />
+
+                <DataGridTextColumn Header="Số lượng" Binding="{Binding Quantity, Mode=TwoWay}" Width="100" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+
+        <!-- Nút lưu -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="540,10,0,10" Width="250">
+            <Button Content="Lưu phiếu xuất" Width="150" Height="30" Margin="5" Click="SaveExport_Click"/>
+            <Button Content="Thoát" Width="80" Height="30" Margin="5" Click="Close_Click"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2">
+            <DataGrid Height="200" x:Name="dgExport" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ImportDate" Binding="{Binding ExportDate}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="CustomerName" Binding="{Binding CustomerName}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="ProductName" Binding="{Binding ProductName}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="TotalPrice" Binding="{Binding TotalPrice}"></DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "C4cNoHuOVCs=",
+  "success": false,
+  "projectFilePath": "C:\\Users\\LENOVO\\Source\\Repos\\Clothing-Warehouse-Management\\CRUDquanao\\CRUDquanao.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1201",
+      "level": "Error",
+      "message": "Project quanliquanao3 is not compatible with net8.0 (.NETCoreApp,Version=v8.0). Project quanliquanao3 supports: net8.0-windows7.0 (.NETCoreApp,Version=v8.0)",
+      "libraryId": "quanliquanao3",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

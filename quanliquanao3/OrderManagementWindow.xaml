@@ -1,0 +1,62 @@
+﻿<Window x:Class="quanliquanao3.OrderManagementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        
+        xmlns:local="clr-namespace:quanliquanao3"
+        mc:Ignorable="d"
+        Title="OrderManagementWindow" Height="450" Width="800">
+    <Grid Margin="0,0,0,32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" MinHeight="198.04" />
+        </Grid.RowDefinitions>
+
+        <!-- Thông tin phiếu nhập -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Height="24" Width="737">
+            <TextBlock Text="Ngày nhập:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <DatePicker x:Name="dpImportDate" Width="150" SelectedDate="{x:Static sys:DateTime.Now}" Margin="0,0,10,0"/>
+
+            <TextBlock Text="Nhà cung cấp:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox x:Name="cbSuppliers" Width="200" DisplayMemberPath="SupplierName" SelectedValuePath="SupplierId" Margin="0,0,10,0" SelectionChanged="cbSuppliers_SelectionChanged" />
+
+            <TextBlock Text="Người nhập:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox x:Name="txtImportedBy" Width="150" IsReadOnly="True" />
+        </StackPanel>
+
+        <DataGrid x:Name="dgImportDetails" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="True" Margin="0,0,265,10">
+            <DataGrid.Columns>
+                <!-- ✅ Sửa dòng dưới đây -->
+                <DataGridComboBoxColumn Header="Sản phẩm" Width="200"
+                                        SelectedValueBinding="{Binding ProductId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValuePath="ProductId"
+                                        DisplayMemberPath="ProductName"
+                                        ItemsSource="{Binding ProductsList, RelativeSource={RelativeSource AncestorType=Window}}" />
+
+                <DataGridTextColumn Header="Số lượng" Binding="{Binding Quantity, Mode=TwoWay}" Width="100" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+
+        <!-- Nút lưu -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="540,10,0,10" Width="250">
+            <Button Content="Lưu phiếu nhập" Width="150" Height="30" Margin="5" Click="SaveImport_Click"/>
+            <Button Content="Thoát" Width="80" Height="30" Margin="5" Click="Close_Click"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2">
+            <DataGrid Height="200" x:Name="dgImport" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ImportedBy" Binding="{Binding ImportedBy}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="ImportDate" Binding="{Binding ImportDate}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="SupplierName" Binding="{Binding SupplierName}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="ProductName" Binding="{Binding ProductName}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="TotalPrice" Binding="{Binding TotalPrice}"></DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </Grid>
+</Window>
