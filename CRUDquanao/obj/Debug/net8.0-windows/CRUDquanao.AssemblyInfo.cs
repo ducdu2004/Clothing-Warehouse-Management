@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CRUDquanao")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03fd01535cfa297f24e4bafa4ed12a742a3d1e09")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5d7cd006fd77cc8d6921da45daa1473a0e8f91fa")]
 [assembly: System.Reflection.AssemblyProductAttribute("CRUDquanao")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CRUDquanao")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

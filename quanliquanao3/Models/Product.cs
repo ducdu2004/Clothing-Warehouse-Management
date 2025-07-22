@@ -19,6 +19,8 @@ public partial class Product
 
     public int? Quantity { get; set; }
 
+    public Boolean? Status { get; set; }
+
     public virtual ProductCategory? Category { get; set; }
 
     public virtual ICollection<ExportDetail> ExportDetails { get; set; } = new List<ExportDetail>();
