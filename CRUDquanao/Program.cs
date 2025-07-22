@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Data.SqlClient; // Thư viện để kết nối với SQL Server
 using System.Linq; // Để sử dụng .Any() cho List
 using System.Text; // Để sử dụng Encoding.UTF8
+using System.Text.RegularExpressions; // Thêm namespace này để sử dụng Regex
 
 namespace CRUDquanao
 {
@@ -284,6 +285,40 @@ namespace CRUDquanao
             }
         }
 
+        // Phương thức lấy tất cả Category (ID và Name)
+        public List<ProductCategory> GetAllCategories()
+        {
+            List<ProductCategory> categories = new List<ProductCategory>();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                string query = "SELECT CategoryID, CategoryName FROM ProductCategories";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    try
+                    {
+                        connection.Open();
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                categories.Add(new ProductCategory
+                                {
+                                    CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                                    CategoryName = reader.GetString(reader.GetOrdinal("CategoryName"))
+                                });
+                            }
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        Console.WriteLine($"Lỗi khi lấy danh sách Category: {ex.Message}");
+                    }
+                }
+            }
+            return categories;
+        }
+
+
         // Phương thức kiểm tra xem sản phẩm có chi tiết nhập kho không
         public bool HasImportDetails(int productId)
         {
@@ -368,6 +403,22 @@ namespace CRUDquanao
             }
             return true;
         }
+
+        // Phương thức kiểm tra xem kích thước có hợp lệ không
+        public static bool IsValidSize(string size)
+        {
+            if (string.IsNullOrWhiteSpace(size)) return false;
+            string[] validSizes = { "S", "M", "L", "XL", "XXL" };
+            return validSizes.Contains(size.Trim().ToUpper());
+        }
+
+        // Phương thức kiểm tra xem màu sắc có hợp lệ không (chỉ chứa chữ cái và không rỗng/khoảng trắng)
+        public static bool IsValidColor(string color)
+        {
+            if (string.IsNullOrWhiteSpace(color)) return false;
+            // Kiểm tra xem chuỗi chỉ chứa các ký tự chữ cái (bao gồm cả tiếng Việt nếu font hỗ trợ)
+            return Regex.IsMatch(color, @"^[a-zA-ZÀÁẠẢÃĂẰẮẶẲẴÂẦẤẬẨẪÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐđ\s]+$");
+        }
     }
 
     // Lớp ConsoleProductManager để quản lý menu và tương tác người dùng
@@ -449,48 +500,94 @@ namespace CRUDquanao
         private void AddNewProduct()
         {
             Console.Write("Nhập tên sản phẩm: ");
-            string productName = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(productName))
+            string productName;
+            do
             {
-                Console.WriteLine("Tên sản phẩm không được để trống.");
-                return;
-            }
+                productName = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(productName))
+                {
+                    Console.WriteLine("Tên sản phẩm không được để trống. Vui lòng nhập tên sản phẩm:");
+                }
+            } while (string.IsNullOrWhiteSpace(productName));
 
-            Console.Write("Nhập Category ID: ");
+
             int categoryID;
-            string categoryIDInput = Console.ReadLine();
-            if (!ValidationHelper.TryParsePositiveInt(categoryIDInput, out categoryID, "Category ID"))
+            string categoryIDInput;
+            do
             {
-                return;
-            }
+                Console.Write("Nhập Category ID: ");
+                categoryIDInput = Console.ReadLine();
+                if (!ValidationHelper.TryParsePositiveInt(categoryIDInput, out categoryID, "Category ID"))
+                {
+                    // Lỗi định dạng, yêu cầu nhập lại
+                    categoryID = 0; // Đặt về 0 để vòng lặp tiếp tục
+                    continue;
+                }
 
-            // Kiểm tra sự tồn tại của CategoryID
-            if (!_dbHelper.CategoryExists(categoryID))
+                // Kiểm tra sự tồn tại của CategoryID
+                if (!_dbHelper.CategoryExists(categoryID))
+                {
+                    Console.WriteLine($"Lỗi: Category ID '{categoryID}' không tồn tại.");
+                    Console.WriteLine("Các Category hiện có:");
+                    List<ProductCategory> categories = _dbHelper.GetAllCategories();
+                    if (categories.Any())
+                    {
+                        foreach (var cat in categories)
+                        {
+                            Console.WriteLine($"- ID: {cat.CategoryID}, Tên: {cat.CategoryName}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Chưa có Category nào trong cơ sở dữ liệu.");
+                    }
+                    Console.WriteLine("Vui lòng nhập một Category ID hợp lệ:");
+                    categoryID = 0; // Đặt về 0 để vòng lặp tiếp tục
+                }
+            } while (categoryID == 0); // Lặp lại nếu CategoryID không hợp lệ hoặc không tồn tại
+
+
+            string size;
+            do
             {
-                Console.WriteLine($"Lỗi: Category ID '{categoryID}' không tồn tại. Vui lòng nhập một Category ID hợp lệ.");
-                return;
-            }
+                Console.Write("Nhập kích thước (Size - S, M, L, XL, XXL): ");
+                size = Console.ReadLine();
+                if (!ValidationHelper.IsValidSize(size))
+                {
+                    Console.WriteLine("Kích thước không hợp lệ. Vui lòng nhập S, M, L, XL, hoặc XXL.");
+                }
+            } while (!ValidationHelper.IsValidSize(size));
 
-            Console.Write("Nhập kích thước (Size): ");
-            string size = Console.ReadLine();
-            Console.Write("Nhập màu sắc (Color): ");
-            string color = Console.ReadLine();
 
-            Console.Write("Nhập giá sản phẩm: ");
+            string color;
+            do
+            {
+                Console.Write("Nhập màu sắc (Color): ");
+                color = Console.ReadLine();
+                if (!ValidationHelper.IsValidColor(color))
+                {
+                    Console.WriteLine("Màu sắc không hợp lệ. Vui lòng chỉ nhập chữ cái (ví dụ: Đỏ, Xanh).");
+                }
+            } while (!ValidationHelper.IsValidColor(color));
+
+
             decimal price;
-            string priceInput = Console.ReadLine();
-            if (!ValidationHelper.TryParsePositiveDecimal(priceInput, out price, "Giá sản phẩm"))
+            string priceInput;
+            do
             {
-                return;
-            }
+                Console.Write("Nhập giá sản phẩm: ");
+                priceInput = Console.ReadLine();
+            } while (!ValidationHelper.TryParsePositiveDecimal(priceInput, out price, "Giá sản phẩm"));
 
-            Console.Write("Nhập số lượng (Quantity): ");
+
             int quantity;
-            string quantityInput = Console.ReadLine();
-            if (!ValidationHelper.TryParseNonNegativeInt(quantityInput, out quantity, "Số lượng"))
+            string quantityInput;
+            do
             {
-                return;
-            }
+                Console.Write("Nhập số lượng (Quantity): ");
+                quantityInput = Console.ReadLine();
+            } while (!ValidationHelper.TryParseNonNegativeInt(quantityInput, out quantity, "Số lượng"));
+
 
             _dbHelper.AddProduct(new Product
             {
@@ -532,58 +629,134 @@ namespace CRUDquanao
                 int newCategoryID;
                 if (!string.IsNullOrWhiteSpace(newCategoryIDInput))
                 {
-                    if (ValidationHelper.TryParsePositiveInt(newCategoryIDInput, out newCategoryID, "Category ID mới"))
+                    // Lặp cho đến khi Category ID hợp lệ hoặc người dùng để trống
+                    bool categoryIdValid = false;
+                    do
                     {
-                        if (_dbHelper.CategoryExists(newCategoryID))
+                        if (ValidationHelper.TryParsePositiveInt(newCategoryIDInput, out newCategoryID, "Category ID mới"))
                         {
-                            productToUpdate.CategoryID = newCategoryID;
+                            if (_dbHelper.CategoryExists(newCategoryID))
+                            {
+                                productToUpdate.CategoryID = newCategoryID;
+                                categoryIdValid = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Lỗi: Category ID '{newCategoryID}' không tồn tại.");
+                                Console.WriteLine("Các Category hiện có:");
+                                List<ProductCategory> categories = _dbHelper.GetAllCategories();
+                                if (categories.Any())
+                                {
+                                    foreach (var cat in categories)
+                                    {
+                                        Console.WriteLine($"- ID: {cat.CategoryID}, Tên: {cat.CategoryName}");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Chưa có Category nào trong cơ sở dữ liệu.");
+                                }
+                                Console.WriteLine("Vui lòng nhập một Category ID hợp lệ hoặc để trống:");
+                                newCategoryIDInput = Console.ReadLine();
+                                if (string.IsNullOrWhiteSpace(newCategoryIDInput)) // Người dùng chọn không đổi
+                                {
+                                    categoryIdValid = true;
+                                }
+                            }
                         }
                         else
                         {
-                            Console.WriteLine($"Lỗi: Category ID '{newCategoryID}' không tồn tại. Giữ nguyên Category ID cũ.");
+                            Console.Write("Nhập Category ID mới (để trống nếu không đổi): ");
+                            newCategoryIDInput = Console.ReadLine();
+                            if (string.IsNullOrWhiteSpace(newCategoryIDInput)) // Người dùng chọn không đổi
+                            {
+                                categoryIdValid = true;
+                            }
                         }
-                    }
+                    } while (!categoryIdValid);
                 }
 
                 Console.WriteLine($"Kích thước hiện tại: {productToUpdate.Size}");
-                Console.Write("Nhập kích thước mới (để trống nếu không đổi): ");
-                string newSize = Console.ReadLine();
+                string newSize;
+                do
+                {
+                    Console.Write("Nhập kích thước mới (S, M, L, XL, XXL, để trống nếu không đổi): ");
+                    newSize = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(newSize)) // Người dùng chọn không đổi
+                    {
+                        break;
+                    }
+                    if (!ValidationHelper.IsValidSize(newSize))
+                    {
+                        Console.WriteLine("Kích thước không hợp lệ. Vui lòng nhập S, M, L, XL, XXL, hoặc để trống.");
+                    }
+                } while (!ValidationHelper.IsValidSize(newSize));
                 if (!string.IsNullOrWhiteSpace(newSize))
                 {
                     productToUpdate.Size = newSize;
                 }
 
+
                 Console.WriteLine($"Màu sắc hiện tại: {productToUpdate.Color}");
-                Console.Write("Nhập màu sắc mới (để trống nếu không đổi): ");
-                string newColor = Console.ReadLine();
+                string newColor;
+                do
+                {
+                    Console.Write("Nhập màu sắc mới (để trống nếu không đổi): ");
+                    newColor = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(newColor)) // Người dùng chọn không đổi
+                    {
+                        break;
+                    }
+                    if (!ValidationHelper.IsValidColor(newColor))
+                    {
+                        Console.WriteLine("Màu sắc không hợp lệ. Vui lòng chỉ nhập chữ cái (ví dụ: Đỏ, Xanh) hoặc để trống.");
+                    }
+                } while (!ValidationHelper.IsValidColor(newColor));
                 if (!string.IsNullOrWhiteSpace(newColor))
                 {
                     productToUpdate.Color = newColor;
                 }
 
+
                 Console.WriteLine($"Giá hiện tại: {productToUpdate.Price}");
-                Console.Write("Nhập giá mới (để trống nếu không đổi): ");
-                string newPriceInput = Console.ReadLine();
+                string newPriceInput;
                 decimal newPrice;
-                if (!string.IsNullOrWhiteSpace(newPriceInput))
+                bool priceValid = false;
+                do
                 {
-                    if (ValidationHelper.TryParsePositiveDecimal(newPriceInput, out newPrice, "Giá mới"))
+                    Console.Write("Nhập giá mới (để trống nếu không đổi): ");
+                    newPriceInput = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(newPriceInput))
+                    {
+                        priceValid = true; // Người dùng chọn không đổi
+                    }
+                    else if (ValidationHelper.TryParsePositiveDecimal(newPriceInput, out newPrice, "Giá mới"))
                     {
                         productToUpdate.Price = newPrice;
+                        priceValid = true;
                     }
-                }
+                } while (!priceValid);
+
 
                 Console.WriteLine($"Số lượng hiện tại: {productToUpdate.Quantity}");
-                Console.Write("Nhập số lượng mới (để trống nếu không đổi): ");
-                string newQuantityInput = Console.ReadLine();
+                string newQuantityInput;
                 int newQuantity;
-                if (!string.IsNullOrWhiteSpace(newQuantityInput))
+                bool quantityValid = false;
+                do
                 {
-                    if (ValidationHelper.TryParseNonNegativeInt(newQuantityInput, out newQuantity, "Số lượng mới"))
+                    Console.Write("Nhập số lượng mới (để trống nếu không đổi): ");
+                    newQuantityInput = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(newQuantityInput))
+                    {
+                        quantityValid = true; // Người dùng chọn không đổi
+                    }
+                    else if (ValidationHelper.TryParseNonNegativeInt(newQuantityInput, out newQuantity, "Số lượng mới"))
                     {
                         productToUpdate.Quantity = newQuantity;
+                        quantityValid = true;
                     }
-                }
+                } while (!quantityValid);
+
 
                 // Kiểm tra xem sản phẩm đã được nhập/xuất chưa
                 bool hasImported = _dbHelper.HasImportDetails(productToUpdate.ProductID);
@@ -598,19 +771,27 @@ namespace CRUDquanao
                 else
                 {
                     Console.WriteLine($"Trạng thái hiện tại: {(productToUpdate.Status ? "Hoạt động" : "Không hoạt động")}");
-                    Console.Write("Cập nhật trạng thái (true/false, để trống nếu không đổi): ");
-                    string newStatusInput = Console.ReadLine();
-                    if (!string.IsNullOrWhiteSpace(newStatusInput))
+                    string newStatusInput;
+                    bool newStatus;
+                    bool statusValid = false;
+                    do
                     {
-                        if (bool.TryParse(newStatusInput, out bool newStatus))
+                        Console.Write("Cập nhật trạng thái (true/false, để trống nếu không đổi): ");
+                        newStatusInput = Console.ReadLine();
+                        if (string.IsNullOrWhiteSpace(newStatusInput))
+                        {
+                            statusValid = true; // Người dùng chọn không đổi
+                        }
+                        else if (bool.TryParse(newStatusInput, out newStatus))
                         {
                             productToUpdate.Status = newStatus;
+                            statusValid = true;
                         }
                         else
                         {
-                            Console.WriteLine("Trạng thái không hợp lệ. Giữ nguyên trạng thái cũ.");
+                            Console.WriteLine("Trạng thái không hợp lệ. Vui lòng nhập 'true', 'false' hoặc để trống.");
                         }
-                    }
+                    } while (!statusValid);
                 }
 
                 _dbHelper.UpdateProduct(productToUpdate);
